@@ -1,0 +1,42 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  ORGANISATION: jsdrews
+  PROJECT: mongo-migrations
+  VERSION: 1.0.0
+  TAG: latest
+
+tasks:
+  default:
+    cmds:
+      - task -a
+    silent: true
+
+  build:
+    cmds:
+      - |
+        if [ -z "$HTTPS_PROXY" ]
+        then
+            docker build -t {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .VERSION }} .
+        else
+            docker build --build-arg HTTPS_PROXY=$HTTPS_PROXY -t {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .VERSION }} .
+        fi
+
+        docker tag {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .VERSION }} {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .TAG }}
+    silent: true
+
+  rmi:
+    cmds:
+      - |
+        docker rmi {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .VERSION }}
+        docker rmi {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .TAG }}
+    silent: true
+
+  publish:
+    cmds:
+      - |
+        docker push {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .VERSION }}
+        docker push {{ .ORGANISATION }}/{{ .PROJECT }}:{{ .TAG }}
+    silent: true
